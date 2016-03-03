@@ -37,7 +37,7 @@ class Cairo(Package):
     depends_on("glib")
     depends_on("pixman")
     depends_on("freetype")
-    depends_on("fontconfig@2.10.91:")  # Require newer version of fontconfig.
+    #depends_on("fontconfig@2.10.91:")  # Require newer version of fontconfig.
 
     def install(self, spec, prefix):
         configure("--prefix=%s" % prefix,
