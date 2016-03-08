@@ -357,7 +357,7 @@ Spack, you can simply run ``spack compiler add`` with the path to
 where the compiler is installed.  For example::
 
     $ spack compiler add /usr/local/tools/ic-13.0.079
-    ==> Added 1 new compiler to /Users/gamblin2/.spackconfig
+    ==> Added 1 new compiler to /Users/gamblin2/.config/spack/config
         intel@13.0.079
 
 Or you can run ``spack compiler add`` with no arguments to force
@@ -367,7 +367,7 @@ installed, but you know that new compilers have been added to your
 
     $ module load gcc-4.9.0
     $ spack compiler add
-    ==> Added 1 new compiler to /Users/gamblin2/.spackconfig
+    ==> Added 1 new compiler to /Users/gamblin2/.config/spack/config
         gcc@4.9.0
 
 This loads the environment module for gcc-4.9.0 to get it into the
@@ -398,7 +398,7 @@ Manual compiler configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If auto-detection fails, you can manually configure a compiler by
-editing your ``~/.spackconfig`` file.  You can do this by running
+editing your ``~/.config/spack/config`` file.  You can do this by running
 ``spack config edit``, which will open the file in your ``$EDITOR``.
 
 Each compiler configuration in the file looks like this::

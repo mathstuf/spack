@@ -205,7 +205,7 @@ And, if you want to remove a mirror, just remove it by name::
 Mirror precedence
 ----------------------------
 
-Adding a mirror really just adds a section in ``~/.spackconfig``::
+Adding a mirror really just adds a section in ``~/.config/spack/config``::
 
    [mirror "local_filesystem"]
        url = file:///Users/gamblin2/spack-mirror-2014-06-24

@@ -35,7 +35,7 @@ there are two configuration scopes:
    ``$(prefix)/etc/spack/``.
 
  2. ``user``: Spack next loads per-user configuration options from
-    ~/.spack/.
+    ~/.config/spack/.
 
 Spack may read configuration files from both of these locations.  When
 configurations conflict, the user config options take precedence over
@@ -312,7 +312,12 @@ class ConfigScope(object):
 
 # These are referenced in alphabetical order by key.
 ConfigScope('10-site', os.path.join(spack.etc_path, 'spack'))
-ConfigScope('50-user', os.path.expanduser('~/.spack'))
+if 'XDG_CONFIG_HOME' in os.environ:
+    user_path = os.path.join(os.environ['XDG_CONFIG_HOME'], 'spack')
+else:
+    user_path = os.path.expanduser('~/.config/spack')
+ConfigScope('50-user', user_path)
+ConfigScope('51-user-old', os.path.expanduser('~/.spack'))
 
 
 def highest_precedence_scope():
