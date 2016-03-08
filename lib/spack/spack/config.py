@@ -310,8 +310,9 @@ class ConfigScope(object):
         self.sections = {}
 
 
-ConfigScope('site', os.path.join(spack.etc_path, 'spack')),
-ConfigScope('user', os.path.expanduser('~/.spack'))
+# These are referenced in alphabetical order by key.
+ConfigScope('10-site', os.path.join(spack.etc_path, 'spack'))
+ConfigScope('50-user', os.path.expanduser('~/.spack'))
 
 
 def highest_precedence_scope():
