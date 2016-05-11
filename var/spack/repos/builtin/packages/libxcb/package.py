@@ -24,6 +24,7 @@
 ##############################################################################
 from spack import *
 
+
 class Libxcb(Package):
     """The X protocol C-language Binding (XCB) is a replacement
     for Xlib featuring a small footprint, latency hiding, direct
@@ -41,10 +42,11 @@ class Libxcb(Package):
     depends_on("pkg-config")
     depends_on("libpthread-stubs")
     depends_on('libxau')
+    depends_on('xproto')
 
     def patch(self):
-        filter_file('typedef struct xcb_auth_info_t {', 'typedef struct {', 'src/xcb.h')
-
+        filter_file('typedef struct xcb_auth_info_t {', 'typedef struct {',
+                    'src/xcb.h')
 
     def install(self, spec, prefix):
         env['PKG_CONFIG_PATH'] = env['PKG_CONFIG_PATH'] + ':/usr/lib64/pkgconfig'
