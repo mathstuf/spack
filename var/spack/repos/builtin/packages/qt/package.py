@@ -160,7 +160,10 @@ class Qt(Package):
             config_args.append('-no-gtkstyle')
 
         if sys.platform == 'darwin':
-            sdkpath = which('xcrun')('--show-sdk-path', output=str)
+            sdkpath = which('xcrun')('--show-sdk-path',
+                                     # XXX(macos): the 10.11 SDK fails to configure.
+                                     '--sdk', 'macosx10.9',
+                                     output=str)
             config_args.extend([
                     '-sdk', sdkpath.strip(),
                 ])
