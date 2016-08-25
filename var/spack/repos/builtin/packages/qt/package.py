@@ -24,6 +24,7 @@
 ##############################################################################
 from spack import *
 import os
+import sys
 
 
 class Qt(Package):
@@ -73,7 +74,7 @@ class Qt(Package):
 
     # OpenGL hardware acceleration
     depends_on("mesa", when='@4:+mesa')
-    depends_on("libxcb")
+    depends_on("libxcb", when=sys.platform != 'darwin')
 
     def url_for_version(self, version):
         url = "http://download.qt.io/archive/qt/"
