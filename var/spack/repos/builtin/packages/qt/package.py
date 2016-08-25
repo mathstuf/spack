@@ -44,6 +44,7 @@ class Qt(Package):
             description="Build with openspeedshop based patch.")
     variant('mesa',       default=False, description="Depend on mesa.")
     variant('gtk',        default=False, description="Build with gtkplus.")
+    variant('dbus',       default=False, description="Build with D-Bus support.")
 
     patch('qt3krell.patch', when='@3.3.8b+krellpatch')
 
@@ -56,7 +57,7 @@ class Qt(Package):
     depends_on("gtkplus", when='+gtk')
     depends_on("libxml2")
     depends_on("zlib")
-    depends_on("dbus", when='@4:')
+    depends_on("dbus", when='@4:+dbus')
     depends_on("libtiff")
     depends_on("libpng@1.2.56", when='@3')
     depends_on("libpng", when='@4:')
@@ -138,13 +139,17 @@ class Qt(Package):
             '-shared',
             '-confirm-license',
             '-openssl-linked',
-            '-dbus-linked',
             '-optimized-qmake',
             '-no-openvg',
             '-no-pch',
             # NIS is deprecated in more recent glibc
             '-no-nis'
         ]
+
+        if '+dbus' in self.spec:
+            config_args.append('-dbus-linked')
+        else:
+            config_args.append('-no-dbus')
 
         if '+gtk' in self.spec:
             config_args.append('-gtkstyle')
