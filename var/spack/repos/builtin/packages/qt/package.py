@@ -50,6 +50,7 @@ class Qt(Package):
     patch('qt3krell.patch', when='@3.3.8b+krellpatch')
 
     patch('qt4-corewlan-new-osx.patch', when='@4')
+    patch('qt4-el-capitan.patch', when='@4')
 
     # Use system openssl for security.
     depends_on("openssl")
