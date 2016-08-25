@@ -140,6 +140,7 @@ class Qt(Package):
             '-shared',
             '-confirm-license',
             '-openssl-linked',
+            '-no-phonon',
             '-optimized-qmake',
             '-no-openvg',
             '-no-pch',
