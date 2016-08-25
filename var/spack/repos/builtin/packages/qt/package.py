@@ -52,7 +52,7 @@ class Qt(Package):
     patch('qt4-corewlan-new-osx.patch', when='@4')
 
     # Use system openssl for security.
-    # depends_on("openssl")
+    depends_on("openssl")
 
     depends_on("glib")
     depends_on("gtkplus", when='+gtk')
