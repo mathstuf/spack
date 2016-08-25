@@ -145,6 +145,9 @@ class Qt(Package):
             '-optimized-qmake',
             '-no-openvg',
             '-no-pch',
+            '-nomake', 'demos',
+            '-nomake', 'examples',
+            '-nomake', 'tests',
             # NIS is deprecated in more recent glibc
             '-no-nis'
         ]
