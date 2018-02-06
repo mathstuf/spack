@@ -1067,6 +1067,8 @@ class Spec(object):
         self.external_path = kwargs.get('external_path', None)
         self.external_module = kwargs.get('external_module', None)
 
+        self._full_hash = kwargs.get('full_hash', None)
+
     @property
     def external(self):
         return bool(self.external_path) or bool(self.external_module)
@@ -1408,6 +1410,20 @@ class Spec(object):
         """Get the first <bits> bits of the DAG hash as an integer type."""
         return base32_prefix_bits(self.dag_hash(), bits)
 
+    def full_hash(self, length=None):
+        if not self.concrete:
+            raise SpecError("Spec is not concrete: " + str(self))
+
+        if not self._full_hash:
+            yaml_text = syaml.dump(
+                self.to_node_dict(hash_function=lambda s: s.full_hash()),
+                default_flow_style=True, width=sys.maxint)
+            package_hash = self.package.content_hash()
+            sha = hashlib.sha256(yaml_text + package_hash)
+            self._full_hash = base64.b32encode(sha.digest()).lower()
+
+        return self._full_hash[:length]
+
     def to_node_dict(self):
         d = syaml_dict()
 
@@ -1473,7 +1489,7 @@ class Spec(object):
         name = next(iter(node))
         node = node[name]
 
-        spec = Spec(name)
+        spec = Spec(name, full_hash=node.get('full_hash', None))
         spec.namespace = node.get('namespace', None)
         spec._hash = node.get('hash', None)
 
@@ -2635,11 +2651,13 @@ class Spec(object):
             self._cmp_key_cache = other._cmp_key_cache
             self._normal = other._normal
             self._concrete = other._concrete
+            self._full_hash = other._full_hash
         else:
             self._hash = None
             self._cmp_key_cache = None
             self._normal = False
             self._concrete = False
+            self._full_hash = None
 
         return changed
 
@@ -3365,6 +3383,7 @@ class SpecParser(spack.parse.Parser):
         spec._package = None
         spec._normal = False
         spec._concrete = False
+        spec._full_hash = None
 
         # record this so that we know whether version is
         # unspecified or not.
