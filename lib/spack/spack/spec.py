@@ -1395,7 +1395,8 @@ class Spec(object):
             return self._hash[:length]
         else:
             yaml_text = syaml.dump(
-                self.to_node_dict(), default_flow_style=True, width=maxint)
+                self.to_node_dict(hash_function=lambda s: s.dag_hash()),
+                default_flow_style=True, width=maxint)
             sha = hashlib.sha1(yaml_text.encode('utf-8'))
 
             b32_hash = base64.b32encode(sha.digest()).lower()
@@ -1406,9 +1407,9 @@ class Spec(object):
                 self._hash = b32_hash
             return b32_hash[:length]
 
-    def dag_hash_bit_prefix(self, bits):
+    def full_hash_bit_prefix(self, bits):
         """Get the first <bits> bits of the DAG hash as an integer type."""
-        return base32_prefix_bits(self.dag_hash(), bits)
+        return base32_prefix_bits(self.full_hash(), bits)
 
     def full_hash(self, length=None):
         if not self.concrete:
@@ -1424,7 +1425,7 @@ class Spec(object):
 
         return self._full_hash[:length]
 
-    def to_node_dict(self):
+    def to_node_dict(self, hash_function):
         d = syaml_dict()
 
         if self.versions:
@@ -1461,7 +1462,7 @@ class Spec(object):
             d['dependencies'] = syaml_dict([
                 (name,
                  syaml_dict([
-                     ('hash', dspec.spec.dag_hash()),
+                     ('hash', hash_function(dspec.spec)),
                      ('type', sorted(str(s) for s in dspec.deptypes))])
                  ) for name, dspec in sorted(deps.items())
             ])
@@ -1470,9 +1471,17 @@ class Spec(object):
 
     def to_dict(self):
         node_list = []
+        # Note that yaml for un-concretized specs will never be written to an
+        # installation directory checked by the DB, so reference errors will
+        # not occur. This uses full_hash when available and otherwise (i.e. if
+        # not concrete) falls back on dag_hash (to allow converting
+        # unconcretized specs to yaml and reading them back)
+        hash_function = lambda x: x.full_hash() if x.concrete else x.dag_hash()
         for s in self.traverse(order='pre', deptype=('link', 'run')):
-            node = s.to_node_dict()
+            node = s.to_node_dict(hash_function)
             node[s.name]['hash'] = s.dag_hash()
+            node[s.name]['full_hash'] = \
+                s.full_hash() if self.concrete else None
             node_list.append(node)
 
         return syaml_dict([('spec', node_list)])

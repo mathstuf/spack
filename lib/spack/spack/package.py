@@ -1246,7 +1246,7 @@ class PackageBase(with_metaclass(PackageMeta, object)):
         return resources
 
     def _resource_stage(self, resource):
-        pieces = ['resource', resource.name, self.spec.dag_hash()]
+        pieces = ['resource', resource.name, self.spec.full_hash()]
         resource_stage_folder = '-'.join(pieces)
         return resource_stage_folder
 

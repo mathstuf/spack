@@ -309,7 +309,7 @@ class BaseConfiguration(object):
         """Hash tag for the module or None"""
         hash_length = self.conf.get('hash_length', 7)
         if hash_length != 0:
-            return self.spec.dag_hash(length=hash_length)
+            return self.spec.full_hash(length=hash_length)
         return None
 
     @property

@@ -46,12 +46,13 @@ def _print_ref_counts():
     recs = []
 
     def add_rec(spec):
+        spec.concretize()
         cspecs = spack.store.db.query(spec, installed=any)
 
         if not cspecs:
             recs.append("[ %-7s ] %-20s-" % ('', spec))
         else:
-            key = cspecs[0].dag_hash()
+            key = cspecs[0].full_hash()
             rec = spack.store.db.get_record(cspecs[0])
             recs.append("[ %-7s ] %-20s%d" % (key[:7], spec, rec.ref_count))
 
@@ -114,6 +115,8 @@ def _check_remove_and_add_package(install_db, spec):
     removed, that it's back when added again, and that ref
     counts are consistent.
     """
+    spec = spack.spec.Spec(spec)
+    spec.concretize()
     original = install_db.query()
     install_db._check_ref_counts()
 

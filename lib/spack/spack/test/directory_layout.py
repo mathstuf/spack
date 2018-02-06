@@ -60,7 +60,7 @@ def test_yaml_directory_layout_parameters(
     assert(path_default == spec.format(
         "${ARCHITECTURE}/"
         "${COMPILERNAME}-${COMPILERVER}/"
-        "${PACKAGE}-${VERSION}-${HASH}"))
+        "${PACKAGE}-${VERSION}-${FULL_HASH}"))
 
     # Test hash_length parameter works correctly
     layout_10 = YamlDirectoryLayout(str(tmpdir), hash_len=10)
@@ -73,7 +73,7 @@ def test_yaml_directory_layout_parameters(
 
     # Test path_scheme
     arch, compiler, package7 = path_7.split('/')
-    scheme_package7 = "${PACKAGE}-${VERSION}-${HASH:7}"
+    scheme_package7 = "${PACKAGE}-${VERSION}-${FULL_HASH:7}"
 
     layout_package7 = YamlDirectoryLayout(str(tmpdir),
                                           path_scheme=scheme_package7)

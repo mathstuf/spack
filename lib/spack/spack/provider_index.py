@@ -191,9 +191,12 @@ class ProviderIndex(object):
         return all(c in result for c in common)
 
     def to_yaml(self, stream=None):
+        hash_function = lambda s: s.full_hash()
         provider_list = self._transform(
             lambda vpkg, pset: [
-                vpkg.to_node_dict(), [p.to_node_dict() for p in pset]], list)
+                vpkg.to_node_dict(hash_function=hash_function),
+                [p.to_node_dict(hash_function=hash_function)
+                    for p in pset]], list)
 
         syaml.dump({'provider_index': {'providers': provider_list}},
                    stream=stream)

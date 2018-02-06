@@ -324,11 +324,13 @@ class TestSpecSyntax(object):
 
     @pytest.mark.db
     def test_ambiguous_hash(self, database):
-        x1 = Spec('a')
+        x1 = Spec('a@1')
         x1._hash = 'xy'
+        x1._full_hash = 'xy'
         x1._concrete = True
-        x2 = Spec('a')
+        x2 = Spec('a@1')
         x2._hash = 'xx'
+        x2._full_hash = 'xx'
         x2._concrete = True
         database.mock.db.add(x1, spack.store.layout)
         database.mock.db.add(x2, spack.store.layout)

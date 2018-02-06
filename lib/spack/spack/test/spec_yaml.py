@@ -112,7 +112,7 @@ def test_using_ordered_dict(builtin_mock):
         dag = Spec(spec)
         dag.normalize()
         from pprint import pprint
-        pprint(dag.to_node_dict())
+        pprint(dag.to_node_dict(hash_function=lambda s: s.dag_hash()))
         break
 
         level = descend_and_check(dag.to_node_dict())

@@ -114,7 +114,8 @@ class InstallRecord(object):
 
     def to_dict(self):
         return {
-            'spec': self.spec.to_node_dict(),
+            'spec': self.spec.to_node_dict(
+                hash_function=lambda x: x.dag_hash()),
             'path': self.path,
             'installed': self.installed,
             'ref_count': self.ref_count,
@@ -210,7 +211,7 @@ class Database(object):
         if prefix not in self._prefix_locks:
             self._prefix_locks[prefix] = Lock(
                 self.prefix_lock_path,
-                spec.dag_hash_bit_prefix(bit_length(sys.maxsize)), 1)
+                spec.full_hash_bit_prefix(bit_length(sys.maxsize)), 1)
 
         return self._prefix_locks[prefix]
 
@@ -657,6 +658,8 @@ class Database(object):
 
     @_autospec
     def get_record(self, spec, **kwargs):
+        spec = spack.spec.Spec(spec)
+        spec.concretize()
         key = self._get_matching_spec_key(spec, **kwargs)
         return self._data[key]
 
@@ -708,6 +711,8 @@ class Database(object):
         """
         # Take a lock around the entire removal.
         with self.write_transaction():
+            spec = spack.spec.Spec(spec)
+            spec.concretize()
             return self._remove(spec)
 
     @_autospec

@@ -188,13 +188,13 @@ class YamlDirectoryLayout(DirectoryLayout):
         self.path_scheme    = kwargs.get('path_scheme') or (
             "${ARCHITECTURE}/"
             "${COMPILERNAME}-${COMPILERVER}/"
-            "${PACKAGE}-${VERSION}-${HASH}")
+            "${PACKAGE}-${VERSION}-${FULL_HASH}")
         if self.hash_len is not None:
-            if re.search('\${HASH:\d+}', self.path_scheme):
+            if re.search('\${FULL_HASH:\d+}', self.path_scheme):
                 raise InvalidDirectoryLayoutParametersError(
                     "Conflicting options for installation layout hash length")
             self.path_scheme = self.path_scheme.replace(
-                "${HASH}", "${HASH:%d}" % self.hash_len)
+                "${FULL_HASH}", "${FULL_HASH:%d}" % self.hash_len)
 
         self.spec_file_name      = 'spec.yaml'
         self.extension_file_name = 'extensions.yaml'
@@ -290,7 +290,7 @@ class YamlDirectoryLayout(DirectoryLayout):
         elif installed_spec == spec.copy(deps=('link', 'run')):
             return path
 
-        if spec.dag_hash() == installed_spec.dag_hash():
+        if spec.full_hash() == installed_spec.full_hash():
             raise SpecHashCollisionError(spec, installed_spec)
         else:
             raise InconsistentInstallDirectoryError(
@@ -309,7 +309,7 @@ class YamlDirectoryLayout(DirectoryLayout):
     def specs_by_hash(self):
         by_hash = {}
         for spec in self.all_specs():
-            by_hash[spec.dag_hash()] = spec
+            by_hash[spec.full_hash()] = spec
         return by_hash
 
 
@@ -396,18 +396,19 @@ class YamlExtensionsLayout(ExtensionsLayout):
                     yaml_file = yaml.load(ext_file)
                     for entry in yaml_file['extensions']:
                         name = next(iter(entry))
-                        dag_hash = entry[name]['hash']
+                        full_hash = entry[name]['full_hash']
                         prefix   = entry[name]['path']
 
-                        if dag_hash not in by_hash:
+                        if full_hash not in by_hash:
                             raise InvalidExtensionSpecError(
-                                "Spec %s not found in %s" % (dag_hash, prefix))
+                                "Spec %s not found in %s" %
+                                (full_hash, prefix))
 
-                        ext_spec = by_hash[dag_hash]
+                        ext_spec = by_hash[full_hash]
                         if prefix != ext_spec.prefix:
                             raise InvalidExtensionSpecError(
                                 "Prefix %s does not match spec hash %s: %s"
-                                % (prefix, dag_hash, ext_spec))
+                                % (prefix, full_hash, ext_spec))
 
                         exts[ext_spec.name] = ext_spec
                 self._extension_maps[spec] = exts
@@ -427,7 +428,7 @@ class YamlExtensionsLayout(ExtensionsLayout):
             yaml.dump({
                 'extensions': [
                     {ext.name: {
-                        'hash': ext.dag_hash(),
+                        'full_hash': ext.full_hash(),
                         'path': str(ext.prefix)
                     }} for ext in sorted(extensions.values())]
             }, tmp, default_flow_style=False, encoding='utf-8')
