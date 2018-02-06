@@ -2890,6 +2890,7 @@ class Spec(object):
             ${ARCHITECTURE}  Architecture
             ${SHA1}          Dependencies 8-char sha1 prefix
             ${HASH:len}      DAG hash with optional length specifier
+            ${FULL_HASH:len} Full hash with optional length specifier
 
             ${SPACK_ROOT}    The spack root directory
             ${SPACK_INSTALL} The default spack install directory,
@@ -3067,6 +3068,13 @@ class Spec(object):
                     else:
                         hashlen = None
                     out.write(fmt % (self.dag_hash(hashlen)))
+                elif named_str.startswith('FULL_HASH'):
+                    if named_str.startswith('FULL_HASH:'):
+                        _, hashlen = named_str.split(':')
+                        hashlen = int(hashlen)
+                    else:
+                        hashlen = None
+                    out.write(fmt % (self.full_hash(hashlen)))
 
                 named = False
 
@@ -3189,7 +3197,7 @@ class LazySpecCache(collections.defaultdict):
 #
 # These are possible token types in the spec grammar.
 #
-HASH, DEP, AT, COLON, COMMA, ON, OFF, PCT, EQ, ID, VAL = range(11)
+HASH, FULL_HASH, DEP, AT, COLON, COMMA, ON, OFF, PCT, EQ, ID, VAL = range(12)
 
 
 class SpecLexer(spack.parse.Lexer):
@@ -3272,6 +3280,9 @@ class SpecParser(spack.parse.Parser):
                 elif self.accept(HASH):
                     # We're finding a spec by hash
                     specs.append(self.spec_by_hash())
+                elif self.accept(FULL_HASH):
+                    # We're finding a spec by hash
+                    specs.append(self.spec_by_full_hash())
 
                 elif self.accept(DEP):
                     if not specs:
@@ -3285,6 +3296,10 @@ class SpecParser(spack.parse.Parser):
                             # We're finding a dependency by hash for an
                             # anonymous spec
                             dep = self.spec_by_hash()
+                        elif self.accept(FULL_HASH):
+                            # We're finding a dependency by hash for an
+                            # anonymous spec
+                            dep = self.spec_by_full_hash()
                         else:
                             # We're adding a dependency to the last spec
                             self.expect(ID)
@@ -3335,6 +3350,24 @@ class SpecParser(spack.parse.Parser):
         specs = spack.store.db.query()
         matches = [spec for spec in specs if
                    spec.dag_hash()[:len(self.token.value)] == self.token.value]
+
+        if not matches:
+            raise NoSuchHashError(self.token.value)
+
+        if len(matches) != 1:
+            raise AmbiguousHashError(
+                "Multiple packages specify hash beginning '%s'."
+                % self.token.value, *matches)
+
+        return matches[0]
+
+    def spec_by_full_hash(self):
+        self.expect(ID)
+
+        specs = spack.store.db.query()
+        matches = [
+            spec for spec in specs
+            if spec.full_hash()[:len(self.token.value)] == self.token.value]
 
         if not matches:
             raise NoSuchHashError(self.token.value)
@@ -3426,6 +3459,15 @@ class SpecParser(spack.parse.Parser):
                 hash_spec = self.spec_by_hash()
                 if hash_spec.satisfies(spec):
                     spec._dup(hash_spec)
+                    break
+                else:
+                    raise InvalidHashError(spec, hash_spec.dag_hash())
+
+            elif self.accept(FULL_HASH):
+                # Get spec by hash and confirm it matches what we already have
+                hash_spec = self.spec_by_full_hash()
+                if hash_spec.satisfies(spec):
+                    spec = hash_spec
                     break
                 else:
                     raise InvalidHashError(spec, hash_spec.dag_hash())
